@@ -69,7 +69,8 @@ int main(int argc, char* argv[])
 	// Open the device using the VID, PID,
 	// and optionally the Serial number.
 	////handle = hid_open(0x4d8, 0x3f, L"12345");
-	handle = hid_open(0x4d8, 0x3f, NULL);
+	handle = hid_open(0x0, 0x0, L"0001292349");
+//	handle = hid_open(0x4d8, 0xdf, NULL);
 	if (!handle) {
 		printf("unable to open device\n");
  		return 1;
@@ -88,39 +89,96 @@ int main(int argc, char* argv[])
 	if (res < 0)
 		printf("Unable to read product string\n");
 	printf("Product String: %ls\n", wstr);
-
+#if 0
 	// Read the Serial Number String
 	wstr[0] = 0x0000;
 	res = hid_get_serial_number_string(handle, wstr, MAX_STR);
 	if (res < 0)
 		printf("Unable to read serial number string\n");
 	printf("Serial Number String: (%d) %ls", wstr[0], wstr);
+#endif
 	printf("\n");
-
+#if 0
 	// Read Indexed String 1
 	wstr[0] = 0x0000;
 	res = hid_get_indexed_string(handle, 1, wstr, MAX_STR);
 	if (res < 0)
 		printf("Unable to read indexed string 1\n");
 	printf("Indexed String 1: %ls\n", wstr);
+#endif
+// *************** Kyklas
 
+
+#if 0
 	// Set the hid_read() function to be non-blocking.
 	hid_set_nonblocking(handle, 1);
 	
 	// Try to read from the device. There shoud be no
 	// data here, but execution should not block.
 	res = hid_read(handle, buf, 17);
+	
+	printf("hid_read : %d\n",res);
+#endif
+	
+	
+#if 1
+	memset(buf,0,20);
 
 	// Send a Feature Report to the device
-	buf[0] = 0x2;
-	buf[1] = 0xa0;
-	buf[2] = 0x0a;
-	buf[3] = 0x00;
-	buf[4] = 0x00;
-	res = hid_send_feature_report(handle, buf, 17);
+	buf[0] = 0x80;
+	buf[11] = 0x00;
+	buf[12] = 0xAA;
+	//res = hid_send_feature_report(handle, buf, 17);
+	res = hid_write(handle,buf,16);
 	if (res < 0) {
 		printf("Unable to send a feature report.\n");
 	}
+
+	res = hid_read(handle, buf, 17);
+
+        printf("hid_read : %d\n",res);
+	
+	if(res > 0)
+	{
+	for (int i = 0; i <res; i++)
+	{
+    		printf("%d - %02X \n",i, buf[i]);
+	}
+
+	printf("Updating config");
+	buf[0]=0x10; // config cmd
+	buf[4]=0x3F; // IObmap , 0-output
+
+	res = hid_write(handle,buf,16);
+        if (res < 0) {
+                printf("Unable to configure\n");
+        }
+	
+
+
+	}
+
+
+	
+
+
+        memset(buf,0,20);
+
+        // Send a Feature Report to the device
+        buf[0] = 0x08;
+        buf[11] = 0x00;
+        buf[12] = 0xC0;
+        //res = hid_send_feature_report(handle, buf, 17);
+        res = hid_write(handle,buf,16);
+        if (res < 0) {
+                printf("Unable to send a feature report.\n");
+        }
+
+
+#endif
+
+#if 0
+
 
 	memset(buf,0,sizeof(buf));
 
@@ -180,6 +238,8 @@ int main(int argc, char* argv[])
 	for (i = 0; i < res; i++)
 		printf("%02hhx ", buf[i]);
 	printf("\n");
+
+#endif
 
 	hid_close(handle);
 
