@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
 	// Open the device using the VID, PID,
 	// and optionally the Serial number.
 	////handle = hid_open(0x4d8, 0x3f, L"12345");
-	handle = hid_open(0x0, 0x0, L"0001292349");
-//	handle = hid_open(0x4d8, 0xdf, NULL);
+//	handle = hid_open(0x0, 0x0, L"0001854504");
+	handle = hid_open(0x4d8, 0xdf, NULL);
 	if (!handle) {
 		printf("unable to open device\n");
  		return 1;
@@ -147,7 +147,9 @@ int main(int argc, char* argv[])
 
 	printf("Updating config");
 	buf[0]=0x10; // config cmd
-	buf[4]=0x3F; // IObmap , 0-output
+
+	// GPIO 3 is an output for the backlight
+	buf[4]=0x37; // IObmap , 0-output
 
 	res = hid_write(handle,buf,16);
         if (res < 0) {
@@ -167,7 +169,8 @@ int main(int argc, char* argv[])
         // Send a Feature Report to the device
         buf[0] = 0x08;
         buf[11] = 0x00;
-        buf[12] = 0xC0;
+	// Clearing LEDs and GPIO3 Backlight
+        buf[12] = 0xC8;
         //res = hid_send_feature_report(handle, buf, 17);
         res = hid_write(handle,buf,16);
         if (res < 0) {
